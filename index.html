@@ -148,8 +148,16 @@ with Go/Hold/Pivot, scored signals and reasoning.
       body:JSON.stringify({ prompt })
     });
 
-    const data = await response.json();
-    const parsed = JSON.parse(data.text);
+
+const data = await response.json();
+
+let parsed;
+try {
+  parsed = JSON.parse(data.text);
+} catch (e) {
+  console.error("Raw AI response:", data.text);
+  throw new Error("AI returned invalid JSON");
+}
 
     document.getElementById("output").textContent =
       JSON.stringify(parsed, null, 2);
