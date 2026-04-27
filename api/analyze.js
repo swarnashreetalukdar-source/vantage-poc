@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt missing" });
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -18,20 +18,27 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "You are VANTAGE, an enterprise campaign intelligence platform." },
-          { role: "user", content: prompt }
-        ],
+        input: prompt,
         temperature: 0.4
       })
     });
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || "";
+
+    const text =
+      data.output_text ||
+      data.output?.[0]?.content?.[0]?.text ||
+      "";
+
+    if (!text) {
+      console.error("Empty AI response", data);
+      return res.status(500).json({ error: "Empty AI response" });
+    }
 
     res.status(200).json({ text });
+
   } catch (error) {
-    console.error(error);
+    console.error("Backend error:", error);
     res.status(500).json({ error: "AI analysis failed" });
   }
 }
