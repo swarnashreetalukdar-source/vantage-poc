@@ -1,9 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>VANTAGE POC</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VANTAGE — Campaign Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* --- STYLES UNCHANGED --- */
+:root {
+  --ink:#0D1B2A;--accent:#00A8E8;--accent-dim:rgba(0,168,232,.08);
+  --green:#00C896;--amber:#F59E0B;--white:#fff;
+  --border:rgba(0,168,232,.2);--text-muted:#6B8BAA;
+  --card-bg:rgba(255,255,255,.03)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--white)}
+.wrapper{max-width:1100px;margin:0 auto;padding:32px}
+</style>
 </head>
+
 <body>
-  <h1>VANTAGE Backend Ready</h1>
+<div class="wrapper">
+
+<header>
+  <h1 style="letter-spacing:4px">VANT<span style="color:#00A8E8">AGE</span></h1>
+  <p style="color:#6B8BAA">Campaign Intelligence · POC</p>
+</header>
+
+<section>
+  <label>Industry</label>
+  <select id="industry">
+    <option value="">Select…</option>
+    <option>Telecoms & Connected Services</option>
+  </select>
+
+  <label>Segment</label>
+  <select id="segment">
+    <option value="">Select…</option>
+    <option>Established Families</option>
+  </select>
+
+  <label>Campaign</label>
+  <select id="campaign">
+    <option value="">Select…</option>
+    <option>Broadband</option>
+  </select>
+
+  <button onclick="runAnalysis()">Run Signal Analysis</button>
+</section>
+
+<pre id="output" style="margin-top:24px;white-space:pre-wrap"></pre>
+
+<script>
+async function runAnalysis() {
+  const industry = industryEl.value = document.getElementById("industry").value;
+  const segment = segmentEl.value = document.getElementById("segment").value;
+  const campaign = campaignEl.value = document.getElementById("campaign").value;
+
+  if (!industry || !segment || !campaign) {
+    alert("Please select all fields");
+    return;
+  }
+
+  const today = new Date().toLocaleDateString("en-GB");
+
+  const prompt = `
+You are VANTAGE, an enterprise campaign intelligence platform.
+Today's date is ${today}.
+
+Industry: ${industry}
+Segment: ${segment}
+Campaign: ${campaign}
+
+Return ONLY valid JSON with Go/Hold/Pivot logic and signal reasoning.
+`;
+
+  const response = await fetch("/api/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt })
+  });
+
+  const data = await response.json();
+  const parsed = JSON.parse(data.text);
+
+  document.getElementById("output").textContent =
+    JSON.stringify(parsed, null, 2);
+}
+</script>
+
+<footer style="margin-top:40px;color:#6B8BAA">
+  Powered by model‑agnostic LLM reasoning · POC
+</footer>
+
+</div>
 </body>
 </html>
