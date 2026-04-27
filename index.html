@@ -1,10 +1,170 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>VANTAGE POC</title>
-  </head>
-  <body style="background:#0D1B2A;color:white;font-family:Arial;padding:40px">
-    <h1>✅ VANTAGE Frontend Loaded</h1>
-    <p>If you can see this, routing is fixed.</p>
-  </body>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VANTAGE — Campaign Intelligence Platform</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink:#0D1B2A; --accent:#00A8E8; --accent-dim:rgba(0,168,232,.08);
+  --green:#00C896; --amber:#F59E0B; --white:#fff;
+  --border:rgba(0,168,232,.2); --text-muted:#6B8BAA;
+  --card-bg:rgba(255,255,255,.03)
+}
+* { box-sizing:border-box; margin:0; padding:0 }
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--ink);
+  color:var(--white);
+  min-height:100vh;
+}
+.wrapper { max-width:1100px; margin:0 auto; padding:32px }
+header { display:flex; justify-content:space-between; margin-bottom:48px }
+.logo { font-family:'Playfair Display',serif; font-size:32px; letter-spacing:4px }
+.logo span { color:var(--accent) }
+.badge {
+  font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  border:1px solid var(--accent); padding:6px 14px;
+  border-radius:20px; color:var(--accent)
+}
+.panel {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:16px; padding:32px; margin-bottom:32px
+}
+label {
+  display:block; font-size:11px; letter-spacing:2px;
+  text-transform:uppercase; margin-bottom:8px; color:var(--accent)
+}
+select {
+  width:100%; padding:14px; border-radius:8px;
+  background:#112233; color:#fff; border:1px solid var(--border);
+  margin-bottom:20px
+}
+button {
+  width:100%; padding:16px; border:none; border-radius:10px;
+  background:var(--accent); font-weight:700; letter-spacing:2px;
+  cursor:pointer
+}
+button:disabled { opacity:.6 }
+.loader { display:none; text-align:center; color:var(--text-muted); margin-top:20px }
+.results { display:none }
+pre {
+  white-space:pre-wrap; background:#08131e;
+  padding:20px; border-radius:12px; border:1px solid var(--border)
+}
+footer {
+  margin-top:60px; font-size:12px; color:var(--text-muted);
+  display:flex; justify-content:space-between
+}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+<header>
+  <div class="logo">VANT<span>AGE</span></div>
+  <div class="badge">Campaign Intelligence · POC</div>
+</header>
+
+<div class="panel">
+  <label>Industry</label>
+  <select id="industry">
+    <option value="">Select industry...</option>
+    <option>Telecoms & Connected Services</option>
+  </select>
+
+  <label>Target Segment</label>
+  <select id="segment">
+    <option value="">Select segment...</option>
+    <option>Established Families</option>
+    <option>Young Independents</option>
+    <option>Digital Empty Nesters</option>
+    <option>Budget Conscious</option>
+  </select>
+
+  <label>Campaign Type</label>
+  <select id="campaign">
+    <option value="">Select campaign...</option>
+    <option>Broadband</option>
+    <option>Mobile</option>
+    <option>TV & Streaming</option>
+    <option>Protection Insurance</option>
+  </select>
+
+  <button id="analyseBtn" onclick="runAnalysis()">Run Signal Analysis</button>
+  <div class="loader" id="loader">Analysing market signals…</div>
+</div>
+
+<div class="panel results" id="results">
+  <pre id="output"></pre>
+</div>
+
+<footer>
+  <div>VANTAGE by EXL Service · Proof of Concept</div>
+  <div>Public signal intelligence only</div>
+</footer>
+
+</div>
+
+<script>
+async function runAnalysis() {
+  const industry = document.getElementById("industry").value;
+  const segment = document.getElementById("segment").value;
+  const campaign = document.getElementById("campaign").value;
+
+  if (!industry || !segment || !campaign) {
+    alert("Please select all fields");
+    return;
+  }
+
+  document.getElementById("analyseBtn").disabled = true;
+  document.getElementById("loader").style.display = "block";
+  document.getElementById("results").style.display = "none";
+
+  const today = new Date().toLocaleDateString("en-GB", {
+    day:"numeric", month:"long", year:"numeric"
+  });
+
+  const prompt = `
+You are VANTAGE, an enterprise campaign intelligence platform.
+Today's date is ${today}.
+
+Industry: ${industry}
+Target Segment: ${segment}
+Campaign Type: ${campaign}
+
+Analyse World, Wallet and Mood signals and return ONLY valid JSON
+with Go/Hold/Pivot, scored signals and reasoning.
+`;
+
+  try {
+    const response = await fetch("/api/analyze", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ prompt })
+    });
+
+    const data = await response.json();
+    const parsed = JSON.parse(data.text);
+
+    document.getElementById("output").textContent =
+      JSON.stringify(parsed, null, 2);
+
+    document.getElementById("results").style.display = "block";
+
+  } catch (e) {
+    alert("Analysis failed. Check console.");
+    console.error(e);
+  }
+
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("analyseBtn").disabled = false;
+}
+</script>
+
+</body>
 </html>
