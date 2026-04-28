@@ -28,17 +28,27 @@ export default async function handler(req, res) {
             content: prompt
           }
         ],
-        temperature: 0.4
+        temperature: 0.4,
+        max_tokens: 1500
       })
     });
 
     const data = await response.json();
 
+    // Surface OpenAI errors explicitly
+    if (data.error) {
+      console.error("OpenAI error:", data.error);
+      return res.status(500).json({ error: data.error.message });
+    }
+
     const text = data?.choices?.[0]?.message?.content;
 
     if (!text) {
-      console.error("Unexpected OpenAI response:", data);
-      return res.status(500).json({ error: "Empty AI response" });
+      console.error("Full OpenAI payload:", data);
+      return res.status(500).json({
+        error: "No content returned by model",
+        debug: data
+      });
     }
 
     res.status(200).json({ text });
